@@ -14,13 +14,15 @@ final class OnboardingStore extends DataStore {
   var updateIterations = 0;
   var updatesComplete = false;
 
+  var initializedAllDisks = false;
+
   var uacEnabled = false;
 
   var cleanedUp = false;
 
-  OnboardingStore.creator() : super('phase');
+  OnboardingStore.creator() : super('onboarding');
 
-  OnboardingStore.empty() : super('phase');
+  OnboardingStore.empty() : super('onboarding');
 
   @override
   void fromMap(Map<String, dynamic> map) {

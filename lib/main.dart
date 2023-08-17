@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
   var _loading = true;
   late PhaseStore _phase;
 
-  var _loadingSysInfo = true;
+  var _loadingSysInfo = false;
   late SysinfoStore _sysinfo;
 
   @override
