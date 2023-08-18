@@ -5,6 +5,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+const ADMIN_PASSWORD = 'lockedtight';
+
 class IVClient {
   static var error = false;
 

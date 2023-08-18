@@ -1,7 +1,7 @@
 import 'package:gw_kiosk/data_store.dart';
 
 final class PhaseStore extends DataStore {
-  late final Phase phase;
+  late Phase phase;
 
   PhaseStore.creator() : super('phase');
 

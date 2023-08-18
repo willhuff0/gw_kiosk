@@ -1,13 +1,18 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gw_kiosk/client/iv_client.dart';
-import 'package:gw_kiosk/data_store.dart';
 import 'package:gw_kiosk/data_stores/phase_store.dart';
 import 'package:gw_kiosk/data_stores/sysinfo_store.dart';
+import 'package:gw_kiosk/homes/floor_home.dart';
 import 'package:gw_kiosk/homes/onboarding_home.dart';
 import 'package:launch_at_startup/launch_at_startup.dart';
 import 'package:window_manager/window_manager.dart';
+
+// When enabled no changes will be made to the host computer
+const DEV_MODE = true;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +46,7 @@ class App extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue.shade700,
-          brightness: Brightness.dark,
+          //brightness: Brightness.dark,
         ),
       ),
       home: const HomePage(),
@@ -60,7 +65,7 @@ class _HomePageState extends State<HomePage> {
   var _loading = true;
   late PhaseStore _phase;
 
-  var _loadingSysInfo = false;
+  var _loadingSysInfo = true;
   late SysinfoStore _sysinfo;
 
   @override
@@ -72,7 +77,9 @@ class _HomePageState extends State<HomePage> {
   void loadStores() async {
     IVClient.connect();
 
-    _phase = await DataStore.read<PhaseStore>(PhaseStore.creator) ?? PhaseStore.empty();
+    // await DataStore.read<PhaseStore>(PhaseStore.creator) ??
+    _phase = PhaseStore.empty();
+    _phase.phase = Phase.floor;
 
     setState(() {
       _loading = false;
@@ -95,6 +102,7 @@ class _HomePageState extends State<HomePage> {
             ? const LoadingPage(label: 'Refreshing system information')
             : switch (_phase.phase) {
                 Phase.onboarding => const OnboardingHomePage(),
+                Phase.floor => const FloorHome(),
                 _ => Container(),
               };
   }

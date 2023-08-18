@@ -4,8 +4,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gw_kiosk/client/iv_client.dart';
-import 'package:gw_kiosk/data_store.dart';
 import 'package:gw_kiosk/data_stores/onboarding_store.dart';
+import 'package:gw_kiosk/main.dart';
 
 class OnboardingHomePage extends StatefulWidget {
   const OnboardingHomePage({super.key});
@@ -28,15 +28,18 @@ class _OnboardingHomePageState extends State<OnboardingHomePage> {
   }
 
   void run() async {
-    _store = await DataStore.read<OnboardingStore>(OnboardingStore.creator) ?? OnboardingStore.empty();
+    //await DataStore.read<OnboardingStore>(OnboardingStore.creator) ??
+    _store = OnboardingStore.empty();
     setState(() {
       loading = false;
       step = 0;
     });
 
+    devModeProcess() async => await Process.start('powershell.exe', ['-Command', 'Start-Sleep 2; Write-Output "DEV_MODE flag enabled, this is a blank process."']);
+
     if (!_store.chocoInstalled) {
       setState(() => step = 1);
-      var process = await Process.start('powershell.exe', ['-Command', r"Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"]);
+      var process = DEV_MODE ? await devModeProcess() : await Process.start('powershell.exe', ['-Command', r"Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"]);
       await _consoleController.addStream(process.stdout.transform(const Utf8Decoder()));
       _store.save();
       setState(() => _store.chocoInstalled = true);
@@ -44,28 +47,28 @@ class _OnboardingHomePageState extends State<OnboardingHomePage> {
 
     if (!_store.choco_firefox) {
       setState(() => step = 1);
-      var process = await Process.start('powershell.exe', ['-Command', 'choco install firefox -y']);
+      var process = DEV_MODE ? await devModeProcess() : await Process.start('powershell.exe', ['-Command', 'choco install firefox -y']);
       await _consoleController.addStream(process.stdout.transform(const Utf8Decoder()));
       _store.save();
       setState(() => _store.choco_firefox = true);
     }
     if (!_store.choco_adobereader) {
       step = 1;
-      var process = await Process.start('powershell.exe', ['-Command', 'choco install adobereader -y']);
+      var process = DEV_MODE ? await devModeProcess() : await Process.start('powershell.exe', ['-Command', 'choco install adobereader -y']);
       await _consoleController.addStream(process.stdout.transform(const Utf8Decoder()));
       _store.save();
       setState(() => _store.choco_adobereader = true);
     }
     if (!_store.choco_vlc) {
       setState(() => step = 1);
-      var process = await Process.start('powershell.exe', ['-Command', 'choco install vlc -y']);
+      var process = DEV_MODE ? await devModeProcess() : await Process.start('powershell.exe', ['-Command', 'choco install vlc -y']);
       await _consoleController.addStream(process.stdout.transform(const Utf8Decoder()));
       _store.save();
       setState(() => _store.choco_vlc = true);
     }
     if (!_store.choco_libreoffice) {
       setState(() => step = 1);
-      var process = await Process.start('powershell.exe', ['-Command', 'choco install libreoffice-still -y']);
+      var process = DEV_MODE ? await devModeProcess() : await Process.start('powershell.exe', ['-Command', 'choco install libreoffice-still -y']);
       await _consoleController.addStream(process.stdout.transform(const Utf8Decoder()));
       _store.save();
       setState(() => _store.choco_libreoffice = true);
@@ -267,7 +270,7 @@ class _ConsoleViewState extends State<ConsoleView> {
   @override
   void initState() {
     _subscription = widget.stream.listen((event) {
-      setState(() => _value += '\n$event');
+      setState(() => _value += event);
     });
     super.initState();
   }

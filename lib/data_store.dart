@@ -28,7 +28,7 @@ abstract class DataStore {
     final file = File(getStorePath(store));
     await file.create(recursive: true);
 
-    final content = json.encode(toMap());
+    final content = const JsonEncoder.withIndent('    ').convert(toMap());
     await file.writeAsString(content);
   }
 
