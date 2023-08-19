@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:gw_kiosk/client/iv_client.dart';
 import 'package:gw_kiosk/data_stores/phase_store.dart';
@@ -13,6 +14,8 @@ import 'package:window_manager/window_manager.dart';
 
 // When enabled no changes will be made to the host computer
 const DEV_MODE = true;
+
+//late final WindowsDeviceInfo windowsInfo;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +35,10 @@ void main() async {
 
   await launchAtStartup.enable();
 
+  // final deviceInfo = DeviceInfoPlugin();
+  // windowsInfo = await deviceInfo.windowsInfo;
+  // print(windowsInfo.data);
+
   runApp(const App());
 }
 
@@ -46,7 +53,7 @@ class App extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue.shade700,
-          //brightness: Brightness.dark,
+          brightness: Brightness.light,
         ),
       ),
       home: const HomePage(),
