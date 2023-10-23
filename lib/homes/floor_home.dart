@@ -1,14 +1,19 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:curved_gradient/curved_gradient.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gw_kiosk/client/iv_client.dart';
+import 'package:gw_kiosk/data_store.dart';
 import 'package:gw_kiosk/data_stores/sysinfo_store.dart';
+import 'package:gw_kiosk/homes/onboarding_home.dart';
 import 'package:gw_kiosk/main.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:window_size/window_size.dart';
 
 class FloorHome extends StatefulWidget {
   const FloorHome({super.key});
@@ -81,8 +86,20 @@ class _FloorHomeState extends State<FloorHome> {
   void initState() {
     _extendedLogoKey = GlobalKey();
     _compactLogoKey = GlobalKey();
-    windowManager.setFullScreen(true);
+    setWindow();
     super.initState();
+  }
+
+  void setWindow() async {
+    //await Window.setEffect(effect: WindowEffect.acrylic, dark: false);
+    //await Window.hideWindowControls();
+    await windowManager.setSkipTaskbar(true);
+    await windowManager.setResizable(false);
+    await windowManager.setAlwaysOnTop(true);
+    //await windowManager.setHasShadow(false);
+    //await windowManager.setAsFrameless();
+    //await windowManager.setBackgroundColor(Colors.transparent);
+    setWindowFrame(Rect.fromLTRB(14.0, 14.0, screen.frame.right / 2.2, screen.frame.bottom - 14.0));
   }
 
   @override
@@ -90,6 +107,7 @@ class _FloorHomeState extends State<FloorHome> {
     final sysInfo = SysinfoStore.current!;
 
     return Scaffold(
+      //backgroundColor: Colors.white.withOpacity(0.4),
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
@@ -508,7 +526,7 @@ class AdminDialog extends StatefulWidget {
 }
 
 class _AdminDialogState extends State<AdminDialog> {
-  var _authenticated = true;
+  var _authenticated = false;
   var _page = 0;
 
   late final List<Widget> _pages;
@@ -587,13 +605,24 @@ class AdminDialogHome extends StatelessWidget {
                   onSelectSystemInformation();
                 },
               ),
+              // const SizedBox(height: 8.0),
+              // FilledButton.tonal(
+              //   child: const Padding(
+              //     padding: EdgeInsets.symmetric(vertical: 6.0, horizontal: 14.0),
+              //     child: Text('IVClient config'),
+              //   ),
+              //   onPressed: () {},
+              // ),
               const SizedBox(height: 8.0),
               FilledButton.tonal(
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 6.0, horizontal: 14.0),
-                  child: Text('IVClient config'),
+                  child: Text('Open Onboarding Log'),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  windowManager.minimize();
+                  Process.start('notepad.exe', ['"$onboardingLogPath"']);
+                },
               ),
               const SizedBox(height: 8.0),
               FilledButton.tonal(
@@ -609,9 +638,11 @@ class AdminDialogHome extends StatelessWidget {
               FilledButton(
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 24.0),
-                  child: Text('Sell this PC'),
+                  child: Text('Close'),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  exit(0);
+                },
               ),
             ],
           ),
@@ -662,6 +693,16 @@ class _SystemInformationPageState extends State<SystemInformationPage> {
               ),
               const SizedBox(width: 8.0),
               const Text('System information'),
+              const SizedBox(width: 8.0),
+              FilledButton.tonalIcon(
+                onPressed: () {
+                  final path = DataStore.getStorePath(sysInfo.store);
+                  windowManager.minimize();
+                  Process.start('notepad.exe', ['"$path"']);
+                },
+                icon: const Icon(Icons.edit),
+                label: const Text('Edit'),
+              ),
             ],
           ),
         ),

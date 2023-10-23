@@ -4,24 +4,36 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:gw_kiosk/client/iv_client.dart';
+import 'package:gw_kiosk/data_store.dart';
 import 'package:gw_kiosk/data_stores/phase_store.dart';
 import 'package:gw_kiosk/data_stores/sysinfo_store.dart';
 import 'package:gw_kiosk/homes/floor_home.dart';
 import 'package:gw_kiosk/homes/onboarding_home.dart';
 import 'package:launch_at_startup/launch_at_startup.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:window_size/window_size.dart';
 
 // When enabled no changes will be made to the host computer
 const DEV_MODE = true;
 
+const REFRESH_SYSTEM_INFO_ON_STARTUP = false;
+
 //late final WindowsDeviceInfo windowsInfo;
+
+late Screen screen;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await Window.initialize();
+  screen = (await getScreenList()).first;
+
   await windowManager.ensureInitialized();
-  const windowOptions = WindowOptions();
+  const windowOptions = WindowOptions(
+    minimumSize: Size(600, 500),
+  );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();
@@ -48,12 +60,13 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      shortcuts: const {},
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue.shade700,
-          brightness: Brightness.light,
+          //brightness: Brightness.light,
         ),
       ),
       home: const HomePage(),
@@ -68,7 +81,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WindowListener {
   var _loading = true;
   late PhaseStore _phase;
 
@@ -84,17 +97,22 @@ class _HomePageState extends State<HomePage> {
   void loadStores() async {
     IVClient.connect();
 
-    // await DataStore.read<PhaseStore>(PhaseStore.creator) ??
-    _phase = PhaseStore.empty();
-    _phase.phase = Phase.floor;
+    _phase = await DataStore.read<PhaseStore>(PhaseStore.creator) ?? PhaseStore.empty();
 
     setState(() {
       _loading = false;
     });
 
-    //_sysinfo = await DataStore.read<SysinfoStore>(SysinfoStore.creator) ?? SysinfoStore.empty();
-    _sysinfo = SysinfoStore.empty();
-    await _sysinfo.refresh();
+    if (REFRESH_SYSTEM_INFO_ON_STARTUP) {
+      _sysinfo = SysinfoStore.empty();
+      await _sysinfo.refresh();
+    } else {
+      final sysInfo = await DataStore.read<SysinfoStore>(SysinfoStore.creator);
+      if (sysInfo == null) {
+        _sysinfo = SysinfoStore.empty();
+        await _sysinfo.refresh();
+      }
+    }
 
     setState(() {
       _loadingSysInfo = false;
@@ -108,10 +126,18 @@ class _HomePageState extends State<HomePage> {
         : _loadingSysInfo
             ? const LoadingPage(label: 'Refreshing system information')
             : switch (_phase.phase) {
-                Phase.onboarding => const OnboardingHomePage(),
+                Phase.onboarding => OnboardingHomePage(onComplete: () async {
+                    setState(() => _phase.phase = Phase.floor);
+                    await _phase.save();
+                  }),
                 Phase.floor => const FloorHome(),
                 _ => Container(),
               };
+  }
+
+  @override
+  void onWindowBlur() async {
+    await windowManager.focus();
   }
 }
 

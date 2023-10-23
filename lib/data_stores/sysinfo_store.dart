@@ -5,14 +5,14 @@ import 'package:windows_system_info/windows_system_info.dart';
 final class SysinfoStore extends DataStore {
   static SysinfoStore? current;
 
-  late final OsInfo os;
-  late final SystemInfo system;
-  late final BiosInfo bios;
-  late final CpuInfo cpu;
-  late final GraphicsInfo graphics;
-  late final List<MemoryInfo> memory;
-  late final List<NetworkInfo> network;
-  late final List<DiskLayoutInfo> disks;
+  late OsInfo os;
+  late SystemInfo system;
+  late BiosInfo bios;
+  late CpuInfo cpu;
+  late GraphicsInfo graphics;
+  late List<MemoryInfo> memory;
+  late List<NetworkInfo> network;
+  late List<DiskLayoutInfo> disks;
 
   SysinfoStore.creator() : super('sysinfo');
 
@@ -127,6 +127,8 @@ final class SysinfoStore extends DataStore {
               virtual: network['physical'],
             ))
         .toList();
+
+    current = this;
   }
 
   @override

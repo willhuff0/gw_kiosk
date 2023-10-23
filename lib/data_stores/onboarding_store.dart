@@ -3,6 +3,8 @@
 import 'package:gw_kiosk/data_store.dart';
 
 final class OnboardingStore extends DataStore {
+  var setPowerConfig = false;
+
   var chocoInstalled = false;
   var choco_firefox = false;
   var choco_adobereader = false;
@@ -26,6 +28,8 @@ final class OnboardingStore extends DataStore {
 
   @override
   void fromMap(Map<String, dynamic> map) {
+    setPowerConfig = map['setPowerConfig'] ?? false;
+
     chocoInstalled = map['chocoInstalled'] ?? false;
     choco_firefox = map['choco_firefox'] ?? false;
     choco_adobereader = map['choco_adobereader'] ?? false;
@@ -37,6 +41,8 @@ final class OnboardingStore extends DataStore {
     updateIterations = map['updateIterations'] ?? 0;
     updatesComplete = map['updatesComplete'] ?? false;
 
+    initializedAllDisks = map['initializeAllDisks'] ?? false;
+
     uacEnabled = map['uacEnabled'] ?? false;
 
     cleanedUp = map['cleanedUp'] ?? false;
@@ -44,6 +50,8 @@ final class OnboardingStore extends DataStore {
 
   @override
   Map<String, dynamic> toMap() => {
+        'setPowerConfig': setPowerConfig,
+        //
         'chocoInstalled': chocoInstalled,
         'choco_firefox': choco_firefox,
         'choco_adobereader': choco_adobereader,
@@ -54,6 +62,8 @@ final class OnboardingStore extends DataStore {
         'updatesStarted': updatesStarted,
         'updateIterations': updateIterations,
         'updatesComplete': updatesComplete,
+        //
+        'initializedAllDisks': initializedAllDisks,
         //
         'uacEnabled': uacEnabled,
         //

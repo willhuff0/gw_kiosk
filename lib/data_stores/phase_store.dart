@@ -11,7 +11,7 @@ final class PhaseStore extends DataStore {
 
   @override
   void fromMap(Map<String, dynamic> map) {
-    phase = Phase.values[(map['phase'] as int? ?? 0)];
+    phase = Phase.values[(int.tryParse(map['phase']) ?? 0)];
   }
 
   @override
