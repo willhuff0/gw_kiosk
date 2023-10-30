@@ -2,14 +2,15 @@
 
 import 'dart:io';
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:gw_kiosk/client/iv_client.dart';
 import 'package:gw_kiosk/data_store.dart';
+import 'package:gw_kiosk/data_stores/iv_store.dart';
 import 'package:gw_kiosk/data_stores/phase_store.dart';
 import 'package:gw_kiosk/data_stores/sysinfo_store.dart';
 import 'package:gw_kiosk/homes/floor_home.dart';
+import 'package:gw_kiosk/homes/inventory/inventory_home.dart';
 import 'package:gw_kiosk/homes/onboarding_home.dart';
 import 'package:launch_at_startup/launch_at_startup.dart';
 import 'package:window_manager/window_manager.dart';
@@ -98,6 +99,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
     IVClient.connect();
 
     _phase = await DataStore.read<PhaseStore>(PhaseStore.creator) ?? PhaseStore.empty();
+    _phase.phase = Phase.inventory;
+    IVStore.empty().refreshAndCreateNew();
 
     setState(() {
       _loading = false;
@@ -127,9 +130,10 @@ class _HomePageState extends State<HomePage> with WindowListener {
             ? const LoadingPage(label: 'Refreshing system information')
             : switch (_phase.phase) {
                 Phase.onboarding => OnboardingHomePage(onComplete: () async {
-                    setState(() => _phase.phase = Phase.floor);
+                    setState(() => _phase.phase = Phase.inventory);
                     await _phase.save();
                   }),
+                Phase.inventory => const InventoryHome(),
                 Phase.floor => const FloorHome(),
                 _ => Container(),
               };
