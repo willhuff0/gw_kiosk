@@ -31,6 +31,12 @@ class _LoginPanelState extends State<LoginPanel> {
     setState(() => _valid = true);
   }
 
+  void _submit() {
+    if (_valid && _password == ADMIN_PASSWORD) {
+      widget.onLoggedIn();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -64,6 +70,9 @@ class _LoginPanelState extends State<LoginPanel> {
               obscureText: true,
               autofocus: true,
               onChanged: _onChanged,
+              onSubmitted: (value) {
+                if (_valid) {}
+              },
             ),
           ),
           Padding(
